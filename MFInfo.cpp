@@ -279,6 +279,8 @@ void loadMediaType(MediaInfo &info, int index, CComPtr<IMFMediaType> pType)
 
 void MediaInfo::load(const std::string &filename)
 {
+	clear();
+
 	CComQIPtr<IMFSourceReader> pReader;
 
 	// load source reader from filename
@@ -331,8 +333,39 @@ void MediaInfo::load(const std::string &filename)
 
 void MediaInfo::load(IMFMediaSource *pSource)
 {
-}
+	clear();
 
+    CComPtr<IMFPresentationDescriptor> pPresDescriptor;
+    DWORD nSourceStreams = 0;
+
+    checkHR(pSource->CreatePresentationDescriptor(&pPresDescriptor), "create presentation description");
+
+    checkHR(pPresDescriptor->GetStreamDescriptorCount(&nSourceStreams), "get description count");
+
+    // For each stream, create source and sink nodes and add them to the topology.
+    for (DWORD x = 0; x < nSourceStreams; x++)
+    {
+		BOOL streamSelected = FALSE;
+		CComPtr<IMFStreamDescriptor> pStreamDescriptor;
+
+        checkHR(pPresDescriptor->GetStreamDescriptorByIndex(x, &streamSelected, 
+            &pStreamDescriptor), "get stream descriptor");
+
+		CComPtr<IMFMediaTypeHandler> pHandler;
+        checkHR(pStreamDescriptor->GetMediaTypeHandler(&pHandler), "get media type handler");
+
+		DWORD dwTypeCount;
+		checkHR(pHandler->GetMediaTypeCount(&dwTypeCount), "get media type count");
+
+		for (DWORD mx = 0; mx < dwTypeCount; x++)
+		{
+			CComPtr<IMFMediaType> pType;
+			checkHR(pHandler->GetMediaTypeByIndex(mx, &pType), "get media type");
+
+			loadMediaType(*this, x, pType);
+		}
+	}
+}
 
 void checkHR(HRESULT hr, const std::string &operation)
 {
