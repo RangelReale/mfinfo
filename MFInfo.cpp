@@ -74,7 +74,7 @@ void loadMediaType_Video(MediaInfo &info, int index, CComPtr<IMFMediaType> pType
 	checkHR(pType->GetGUID(MF_MT_SUBTYPE, &subtype), "load subtype");
 	vinfo->videoFormat = subtype;
 
-	if (IsEqualGUID(subtype, MFVideoFormat_H264)) vinfo->videoFormatStr = "H.264";
+	if (IsEqualGUID(subtype, MFVideoFormat_H264)) vinfo->videoFormatStr = "H.264 (AVC)";
 	else if (IsEqualGUID(subtype, MFVideoFormat_MP43)) vinfo->videoFormatStr = "MPEG-4";
 	else if (IsEqualGUID(subtype, MFVideoFormat_MP4S)) vinfo->videoFormatStr = "MPEG-4";
 	else if (IsEqualGUID(subtype, MFVideoFormat_M4S2)) vinfo->videoFormatStr = "MPEG-4 part 2";
@@ -148,7 +148,7 @@ void loadMediaType_Video(MediaInfo &info, int index, CComPtr<IMFMediaType> pType
 			else if (v1 == eAVEncH264VProfile_444) vinfo->info_h264->profileStr = "High 4:4:4";
 			else if (v1 == eAVEncH264VProfile_Extended) vinfo->info_h264->profileStr = "Extended";
 
-			vinfodesc << "Profile " << vinfo->info_h264->profileStr << "@";
+			vinfodesc << vinfo->info_h264->profileStr << "@";
 		}
 
 		// MPEG2 LEVEL
@@ -357,7 +357,7 @@ void MediaInfo::load(IMFMediaSource *pSource)
 		DWORD dwTypeCount;
 		checkHR(pHandler->GetMediaTypeCount(&dwTypeCount), "get media type count");
 
-		for (DWORD mx = 0; mx < dwTypeCount; x++)
+		for (DWORD mx = 0; mx < dwTypeCount; mx++)
 		{
 			CComPtr<IMFMediaType> pType;
 			checkHR(pHandler->GetMediaTypeByIndex(mx, &pType), "get media type");
